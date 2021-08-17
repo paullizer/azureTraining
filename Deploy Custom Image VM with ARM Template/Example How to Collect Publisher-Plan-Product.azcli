@@ -1,0 +1,54 @@
+# -------------------------------------
+# Azure VM Publisher, Plan, Product
+# -------------------------------------
+
+
+# -------- Scenario #1 ----------------
+# Get Plan info from MarketPlace (planning phase)
+# -------------------------------------
+
+$location = "eastus"
+az vm image list-publishers --location $location --output table
+# Select Publisher from list
+$publisher = "microsoftwindowsserver"
+az vm image list-offers --location $location --publisher $publisher --output table
+# Select Offer from list
+$offer = "microsoftserveroperatingsystems-previews"
+az vm image list-skus --location $location --publisher $publisher --offer $offer --output table
+# Select Sku from list
+$sku = "windows-server-2022"
+# Select latest version, unless you want a specific older version
+$version = "latest"
+# urn = publisher:offer:sku
+$urn = $publisher + ":" + $offer + ":" + $sku + ":" + $version
+# Collect image information
+$imageInfo = az vm image show --location $location --urn $urn
+# Convert from JSON to PowerShell Object
+$imageObject = $imageInfo | convertfrom-json
+$imageObject.plan
+
+# ======== OUTPUT =====================
+# name                product                                  publisher
+# ----                -------                                  ---------
+# windows-server-2022 microsoftserveroperatingsystems-previews microsoftwindowsserver
+# =====================================
+
+# -------- Scenario #2 ----------------
+# Get Plan info from existing VM that you sysprepped (already made the VM)
+# -------------------------------------
+
+# Name of the VM you generalized using Sysprep, this is the VM you want to be used to create an image
+$nameVM = "template"
+# Name of the Resource Group where the VM resides
+$nameResourceGroup = "RG-East-Hub"
+# Collect image information
+$imageInfo = az vm show --name $nameVM --resource-group $nameResourceGroup
+# Convert from JSON to PowerShell Object
+$imageObject = $imageInfo | convertfrom-json
+$imageObject.plan
+
+# ======== OUTPUT =====================
+# name                product                                  promotionCode publisher
+# ----                -------                                  ------------- ---------
+# windows-server-2022 microsoftserveroperatingsystems-previews               microsoftwindowsserver
+# =====================================
